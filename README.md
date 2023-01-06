@@ -13,9 +13,11 @@ rfd tests/input/hello.docx
 ```sh
 rfd test/input/hello.docx -p Test
 ```
+3.Find pattern "Test" in file with insensitive case
 ```sh
 rfd test/input/hello.docx -p test -i
 ```
+4. Find all docx file in directory
 ```sh
 rfd test/input/
 ```
@@ -27,3 +29,4 @@ There are six tests.
 ```sh
 cargo test
 ```
+
