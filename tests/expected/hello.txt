@@ -1,0 +1,3 @@
+----tests/input/hello.docx----
+Test #1
+Hello
