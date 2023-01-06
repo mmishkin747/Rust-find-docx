@@ -10,3 +10,11 @@ rfd test/input/hello.docx -p Test
 rfd test/input/hello.docx -p test -i
 
 rfd test/input/
+
+## Running the tests
+
+There are six tests.
+
+```sh
+cargo test
+```
