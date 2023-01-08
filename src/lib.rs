@@ -1,11 +1,10 @@
 use clap::{Arg, ArgAction, Command};
+use colored::Colorize;
 use dotext::*;
 use regex::{Regex, RegexBuilder};
 use std::error::Error;
 use std::io::Read;
 use walkdir::{DirEntry, WalkDir};
-use colored::Colorize;
-
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
 
@@ -17,7 +16,6 @@ pub struct Config {
     non_formating: bool,
     pattern: Option<String>,
     insensitive: bool,
-    
 }
 
 pub fn get_args() -> MyResult<Config> {
@@ -46,17 +44,15 @@ pub fn get_args() -> MyResult<Config> {
         )
         .arg(
             Arg::new("pattern")
-            .value_name("Pattertn")
-            .short('p')
-            .help("Find pattern")
-
+                .value_name("Pattertn")
+                .short('p')
+                .help("Find pattern"),
         )
         .arg(
             Arg::new("insensitive")
-            .short('i')
-            .help("Case-insensitive") 
-            .action(ArgAction::SetTrue),
-            
+                .short('i')
+                .help("Case-insensitive")
+                .action(ArgAction::SetTrue),
         )
         .get_matches();
 
@@ -67,8 +63,8 @@ pub fn get_args() -> MyResult<Config> {
         names.push(Regex::new("\\.xlsx").unwrap());
     }
 
-    let pattern=matches.get_one::<String>("pattern").map(|v| v.to_string());
-     
+    let pattern = matches.get_one::<String>("pattern").map(|v| v.to_string());
+
     Ok(Config {
         files: matches
             .get_many::<String>("files")
@@ -80,7 +76,6 @@ pub fn get_args() -> MyResult<Config> {
         names,
         pattern,
         insensitive: matches.get_flag("insensitive"),
-        
     })
 }
 
@@ -89,63 +84,57 @@ pub fn run(config: Config) -> MyResult<()> {
     let files = walk(&config).unwrap();
     for filename in files {
         match open(&filename) {
-            Ok(mut file) => 
-            {
-                match &config.pattern{
-                    Some(pattern) => find_line(& mut file, &filename, pattern, config.insensitive),
-                    _ => print_file(&mut file, &filename, &config.non_formating)?,
-                }}
-            
-            _ => {},
-            }
+            Ok(file) => match &config.pattern {
+                Some(pattern) => find_line(&file, &filename, pattern, config.insensitive),
+                _ => print_file(&file, &filename, &config.non_formating)?,
+            },
+
+            _ => {}
+        }
     }
 
-    
     Ok(())
 }
 
-fn print_file(file: &mut Docx, filename: &str, non_formating:& bool) -> MyResult<()> {
-    
-    let mut buf = String::new();
-    let _ = file.read_to_string(&mut buf);
+fn print_file(file: &String, filename: &str, non_formating: &bool) -> MyResult<()> {
     println!("{:-^30}", filename.green());
-    for line in buf.lines() {
-        if *non_formating || line.len() > 0{
+    for line in file.lines() {
+        if *non_formating || line.len() > 0 {
             println!("{}", line);
         }
     }
     Ok(())
 }
 
-fn open(filename: &str) -> MyResult<dotext::Docx> {
+fn open(filename: &str) -> MyResult<String> {
     match Docx::open(filename) {
-        Ok(file) => Ok(file),
-        Err(e) =>  {
+        Ok(mut file) => {
+            let mut buf = String::new();
+            let _ = file.read_to_string(&mut buf);
+            Ok(buf)
+        }
+        Err(e) => {
             eprintln!("{:-^30} {}", filename.red(), e);
             Err(Box::new(e))
-    },
+        }
     }
-    
 }
 
-fn find_line(file: &mut Docx,filename:&str, pattern: &String, insensitive: bool){
-    let mut buf = String::new();
-    let _ = file.read_to_string(&mut buf);
-    let pattern = RegexBuilder::new(pattern.as_str()).case_insensitive(insensitive).build().unwrap();
-    let split = buf.split("\n");
-    let vec: Vec<&str> = split.collect();
+fn find_line(file: &String, filename: &str, pattern: &String, insensitive: bool) {
+    let pattern = RegexBuilder::new(pattern.as_str())
+        .case_insensitive(insensitive)
+        .build()
+        .unwrap();
     let mut count_match = 0;
-    for (count, line) in vec.iter().enumerate(){
-        if pattern.is_match(line){
-            if count_match == 0 {println!("{:-^30}", filename.green())}
-            println!("{}. {}",count, line);
+    for (count, line) in file.lines().enumerate() {
+        if pattern.is_match(line) {
+            if count_match == 0 {
+                println!("{:-^30}", filename.green())
+            }
+            println!("{}. {}", count, line);
             count_match += 1;
         }
     }
-    
-
-
-    
 }
 
 fn walk(config: &Config) -> MyResult<Vec<String>> {
