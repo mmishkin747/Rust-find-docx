@@ -1,10 +1,13 @@
 use clap::{Arg, ArgAction, Command};
 use colored::Colorize;
-use dotext::*;
 use regex::{Regex, RegexBuilder};
 use std::error::Error;
-use std::io::Read;
 use walkdir::{DirEntry, WalkDir};
+use crate::cr_xlxs::open_xlsx;
+use crate::cr_docx::open_docx;
+
+pub mod cr_xlxs;
+pub mod cr_docx;
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
 
@@ -12,7 +15,6 @@ type MyResult<T> = Result<T, Box<dyn Error>>;
 pub struct Config {
     files: Vec<String>,
     names: Vec<Regex>,
-    excel: bool,
     non_formating: bool,
     pattern: Option<String>,
     insensitive: bool,
@@ -31,12 +33,6 @@ pub fn get_args() -> MyResult<Config> {
                 .action(ArgAction::Append),
         )
         .arg(
-            Arg::new("excel")
-                .short('e')
-                .help("Add find excel files, (not implemented)")
-                .action(ArgAction::SetFalse),
-        )
-        .arg(
             Arg::new("non_formating")
                 .long("non-formating")
                 .help("Non-formating text")
@@ -51,17 +47,14 @@ pub fn get_args() -> MyResult<Config> {
         .arg(
             Arg::new("insensitive")
                 .short('i')
-                .help("Case-insensitive")
-                .action(ArgAction::SetTrue),
+                .help("Case-sensitive")
+                .action(ArgAction::SetFalse),
         )
         .get_matches();
 
     let mut names: Vec<Regex> = Vec::new();
     names.push(Regex::new("\\.doc").unwrap());
-    let excel = matches.get_flag("excel");
-    if excel {
-        names.push(Regex::new("\\.xlsx").unwrap());
-    }
+    names.push(Regex::new("\\.xlsx").unwrap());
 
     let pattern = matches.get_one::<String>("pattern").map(|v| v.to_string());
 
@@ -71,7 +64,6 @@ pub fn get_args() -> MyResult<Config> {
             .unwrap_or_default()
             .map(|v| v.to_string())
             .collect::<Vec<_>>(),
-        excel,
         non_formating: matches.get_flag("non_formating"),
         names,
         pattern,
@@ -107,18 +99,14 @@ fn print_file(file: &String, filename: &str, non_formating: &bool) -> MyResult<(
 }
 
 fn open(filename: &str) -> MyResult<String> {
-    match Docx::open(filename) {
-        Ok(mut file) => {
-            let mut buf = String::new();
-            let _ = file.read_to_string(&mut buf);
-            Ok(buf)
-        }
-        Err(e) => {
-            eprintln!("{:-^30} {}", filename.red(), e);
-            Err(Box::new(e))
-        }
+    match filename {
+        s if s.ends_with(".docx") => open_docx(filename),
+        s if s.ends_with(".xlsx") => open_xlsx(filename),
+        _ => Err("error type".into())
     }
 }
+
+
 
 fn find_line(file: &String, filename: &str, pattern: &String, insensitive: bool) {
     let pattern = RegexBuilder::new(pattern.as_str())
