@@ -89,7 +89,7 @@ pub fn run(config: Config) -> MyResult<()> {
 }
 
 fn print_file(file: &String, filename: &str, non_formating: &bool) -> MyResult<()> {
-    println!("{:-^30}", filename.green());
+    println!("{:-^30}", filename.blue());
     for line in file.lines() {
         if *non_formating || line.len() > 0 {
             println!("{}", line);
@@ -117,10 +117,19 @@ fn find_line(file: &String, filename: &str, pattern: &String, insensitive: bool)
     for (count, line) in file.lines().enumerate() {
         if pattern.is_match(line) {
             if count_match == 0 {
-                println!("{:-^30}", filename.green())
+                println!("{:-^30}", filename.blue())
             }
-            println!("{}. {}", count, line);
-            count_match += 1;
+            print!("{}. ", count);
+            for word in line.split_ascii_whitespace(){
+                if pattern.is_match(word){
+                    print!("{} ", word.bold().green());
+                }else{
+                    print!("{} ", word);
+                }
+                count_match += 1;
+            }
+            println!();
+            
         }
     }
 }
@@ -140,7 +149,7 @@ fn walk(config: &Config) -> MyResult<Vec<String>> {
             .into_iter()
             .filter_map(|e| match e {
                 Err(e) => {
-                    eprintln!("{}", e);
+                    eprintln!("{} -- {}", path.red(), e);
                     None
                 }
                 Ok(entry) => Some(entry),

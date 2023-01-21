@@ -39,12 +39,12 @@ fn hello_1() -> TestResult {
     run(&["tests/input/hello.docx"], "tests/expected/hello.txt")
 }
 
-/* 
+
 #[test]
-fn no_open() -> TestResult{
-    run_err(&["tests/input/no_open.docx"], "tests/expected/no_open.txt")
+fn no_found() -> TestResult{
+    run_err(&["tests/input/no_found.docx"], "tests/expected/no_found.txt")
 }
-*/
+
 
 #[test]
 fn walk_hello() -> TestResult{
@@ -53,10 +53,14 @@ fn walk_hello() -> TestResult{
 
 #[test]
 fn find_text() -> TestResult{
-    run(&["tests/input/a", "-p", "Test"], "tests/expected/find_text.txt")
+    run(&["tests/input/a", "-p", "test"], "tests/expected/find_text.txt")
 }
 
 #[test]
-fn find_text_insensitive() -> TestResult{
-    run(&["tests/input/a", "-p", "test", "-i"], "tests/expected/find_text.txt")
+fn find_text_sensitive() -> TestResult{
+    run(&["tests/input/a", "-p", "Test", "-i"], "tests/expected/find_text.txt")
+}
+#[test]
+fn excel_open () -> TestResult{
+    run(&["tests/input/excel.xlsx"], "tests/expected/excel_open.txt")
 }

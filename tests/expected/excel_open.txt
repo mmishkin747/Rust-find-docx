@@ -1,0 +1,5 @@
+----tests/input/excel.xlsx----
+line 1 A  Line1 B  line 1 C  4  
+line 2 A  Line2 B  
+Hello  line 3 c  
+world  
