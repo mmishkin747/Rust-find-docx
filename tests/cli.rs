@@ -38,6 +38,7 @@ fn run_err(args: &[&str], expected_file: &str) -> TestResult {
 fn hello_1() -> TestResult {
     run(&["tests/input/hello.docx"], "tests/expected/hello.txt")
 }
+
 /* 
 #[test]
 fn no_open() -> TestResult{
