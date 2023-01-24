@@ -75,10 +75,10 @@ pub fn get_args() -> MyResult<Config> {
 pub fn run(config: Config) -> MyResult<()> {
     let files = walk(&config).unwrap();
     for filename in files {
-        match open(&filename) {
+        match open(&filename,  &config.non_formating) {
             Ok(file) => match &config.pattern {
-                Some(pattern) => find_line(&file, &filename, pattern, config.insensitive),
-                _ => print_file(&file, &filename, &config.non_formating)?,
+                Some(pattern) => find_line(&file, pattern, config.insensitive),
+                _ => print_file(&file)?,
             },
 
             _ => {}
@@ -88,19 +88,23 @@ pub fn run(config: Config) -> MyResult<()> {
     Ok(())
 }
 
-fn print_file(file: &String, filename: &str, non_formating: &bool) -> MyResult<()> {
-    println!("{:-^30}", filename.blue());
+fn print_file(file: &String) -> MyResult<()> {
+    let mut start_file:bool = true;
     for line in file.lines() {
-        if *non_formating || line.len() > 0 {
+        if start_file {
+            println!("{}", line.bold().blue());
+            start_file = false;
+        }else{
             println!("{}", line);
         }
+        
     }
     Ok(())
 }
 
-fn open(filename: &str) -> MyResult<String> {
+fn open(filename: &str, non_formating: &bool) -> MyResult<String> {
     match filename {
-        s if s.ends_with(".docx") => open_docx(filename),
+        s if s.ends_with(".docx") => open_docx(filename, non_formating),
         s if s.ends_with(".xlsx") => open_xlsx(filename),
         _ => Err("error type".into())
     }
@@ -108,29 +112,36 @@ fn open(filename: &str) -> MyResult<String> {
 
 
 
-fn find_line(file: &String, filename: &str, pattern: &String, insensitive: bool) {
+fn find_line(file: &String, pattern: &String, insensitive: bool) {
     let pattern = RegexBuilder::new(pattern.as_str())
         .case_insensitive(insensitive)
         .build()
         .unwrap();
-    let mut count_match = 0;
+    
     for (count, line) in file.lines().enumerate() {
-        if pattern.is_match(line) {
-            if count_match == 0 {
-                println!("{:-^30}", filename.blue())
-            }
+ 
+        if count !=0 && pattern.is_match(line) {
             print!("{}. ", count);
             for word in line.split_ascii_whitespace(){
+
                 if pattern.is_match(word){
-                    print!("{} ", word.bold().green());
+                    print!("{} ", word.on_yellow());
                 }else{
                     print!("{} ", word);
                 }
-                count_match += 1;
             }
             println!();
-            
+                
+        }else{
+            if  count == 0 {
+                if  pattern.is_match(line){
+                    println!("{}", line.bold().on_blue());
+                }else{
+                    println!("{}", line.bold().blue());
+                }
+            } 
         }
+
     }
 }
 

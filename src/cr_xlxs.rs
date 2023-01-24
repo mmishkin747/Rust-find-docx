@@ -5,7 +5,8 @@ use crate::MyResult;
 
 pub fn open_xlsx(filename: &str) -> MyResult<String> {
     let mut excel: Xlsx<_> = open_workbook(filename)?;
-    let mut res = String::new();
+    let mut res = filename.to_string();
+    res.push_str("\n");
     if let Some(Ok(r)) = excel.worksheet_range("Sheet1") {
         for row in r.rows() {
 

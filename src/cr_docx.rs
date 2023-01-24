@@ -1,28 +1,25 @@
-use colored::Colorize;
 use dotext::*;
 use std::io::Read;
 
 use crate::MyResult;
 
-pub fn open_docx1(filename: &str) -> MyResult<String> {
-    match Docx::open(filename) {
-        Ok(mut file) => {
-            let mut buf = String::new();
-            let _ = file.read_to_string(&mut buf);
-            Ok(buf)
-        }
-        Err(e) => {
-            eprintln!("{:-^30} {}", filename.red(), e);
-            Err(Box::new(e))
-        }
-    }
-}
 
-pub fn open_docx(filename: &str) -> MyResult<String> {
+pub fn open_docx(filename: &str, non_formating: &bool) -> MyResult<String> {
     let docx = Docx::open(filename);
     let mut buf = String::new();
     if let Ok(mut file) = docx {
         let _ = file.read_to_string(&mut buf);
     }
-    Ok(buf)
+    let mut res = filename.to_string();
+    res.push_str("\n");
+
+    for line in buf.lines(){
+
+        if *non_formating || line.len() > 0 {
+            res.push_str(line);
+            res.push_str("\n");
+        }
+    }      
+
+    Ok(res)
 }

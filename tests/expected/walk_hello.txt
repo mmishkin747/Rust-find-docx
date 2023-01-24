@@ -1,6 +1,6 @@
--tests/input/a/b/hello4.docx--
+tests/input/a/b/hello4.docx
 Test #4
 Hello folder b
---tests/input/a/hello3.docx---
+tests/input/a/hello3.docx
 Test #3
 Hello folder a
