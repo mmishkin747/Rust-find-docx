@@ -118,31 +118,43 @@ fn find_line(file: &String, pattern: &String, insensitive: bool) {
         .build()
         .unwrap();
     
-    for (count, line) in file.lines().enumerate() {
- 
-        if count !=0 && pattern.is_match(line) {
-            print!("{}. ", count);
-            for word in line.split_ascii_whitespace(){
+    let mut name_file: String = String::new();
 
-                if pattern.is_match(word){
-                    print!("{} ", word.on_yellow());
-                }else{
-                    print!("{} ", word);
-                }
-            }
-            println!();
-                
-        }else{
-            if  count == 0 {
-                if  pattern.is_match(line){
+    let mut count_match = 0;
+    for (count, line) in file.lines().enumerate() {
+
+        match count {
+            0 => {
+                if pattern.is_match(line){
                     println!("{}", line.bold().on_blue());
-                }else{
-                    println!("{}", line.bold().blue());
-                }
-            } 
+                    count_match+=1;
+                } else{
+                name_file = line.to_string()}
+            }
+            _ => {
+                if pattern.is_match(line) {
+                    if count_match == 0 {println!("{}", name_file.bold().blue())}
+                    print!("{}. ", count.to_string().bold());
+                    for word in line.split_ascii_whitespace(){
+                        
+                        if pattern.is_match(word){
+                            count_match+=1;
+                            print!("{} ", word.on_yellow());
+
+                        }else{
+                            print!("{} ", word);
+                        }
+                    }
+                    println!();
+            }
+
         }
+        }
+        
 
     }
+
+    println!("--- {} = {} ---","Count matches".bold(), count_match.to_string().bold());
 }
 
 fn walk(config: &Config) -> MyResult<Vec<String>> {
