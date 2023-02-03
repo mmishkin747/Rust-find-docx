@@ -154,7 +154,7 @@ fn find_line(file: &String, pattern: &String, insensitive: bool) {
 
     }
 
-    println!("--- {} = {} ---","Count matches".bold(), count_match.to_string().bold());
+    //println!("--- {} = {} ---","Count matches".bold(), count_match.to_string().bold());
 }
 
 fn walk(config: &Config) -> MyResult<Vec<String>> {
